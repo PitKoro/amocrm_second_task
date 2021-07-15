@@ -9,39 +9,25 @@ use Illuminate\Http\Request;
 
 class MainController extends Controller
 {
-    public function validation(Request $request) {
-        //dd($request);
-        //Валидация данных
+    public function validation(Request $request)
+    {
+
         $request->validate([
             'name' => 'required|alpha',
             'surname' => 'required|alpha',
-            'age' => 'required | numeric',
+            'age' => 'required | numeric | min:1',
             'phone' => 'required | digits:11'
         ]);
 
-        $access_token = get_access_token();
-        dd($access_token);
+        $inputData = $request->all();
 
-        return redirect()->route('home');
+        return redirect()->route('submit', [
+            'name'    => $inputData['name'], 
+            'surname' => $inputData['surname'], 
+            'age'     => $inputData['age'], 
+            'phone'   => $inputData['phone'], 
+            'email'   => $inputData['email'], 
+            'gender'  => $inputData['gender']
+        ]);
     }
-
-    
-}
-
-
-function get_access_token() {
-    
-    $clientId = '948c90a5-7a59-44db-9056-b694e6b8eb69';
-    $clientSecret = 'x2OKuCwzFqL8DdeVfgsneiQ9dtJH8OMrtCcowgmNuXn2pB2w1WMxZ6iUkRxd25IC';
-    $redirectUri = 'https://example.com';
-    $apiClient = new \AmoCRM\Client\AmoCRMApiClient($clientId, $clientSecret, $redirectUri);
-    $authorizationUrl = $apiClient->getOAuthClient()->getAuthorizeUrl([
-        'state' => $state,
-        'mode' => 'post_message', //post_message - редирект произойдет в открытом окне, popup - редирект произойдет в окне родителе
-    ]);
-
-    header('Location: ' . $authorizationUrl);
-    
-
-    return $access_token;
 }

@@ -1,0 +1,14 @@
+@extends('base')
+
+@section('content')
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-4">
+                <div class="alert alert-success">
+                    <h1 class="text-center">Success!</h1>    
+                </div> 
+            </div>
+        </div>
+        
+    </div>
+@endsection
