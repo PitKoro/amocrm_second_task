@@ -15,7 +15,7 @@ class MainController extends Controller
         $request->validate([
             'name' => 'required|alpha',
             'surname' => 'required|alpha',
-            'age' => 'required | numeric | min:1',
+            'age' => 'required | numeric | min:1 | max:120',
             'phone' => 'required | digits:11'
         ]);
 
