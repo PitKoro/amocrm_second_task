@@ -3,16 +3,47 @@
 use App\Http\Controllers\MainController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\RadiobuttonCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\RadiobuttonCustomFieldValueModel;
+use AmoCRM\Models\CustomFieldsValues\RadiobuttonCustomFieldValuesModel;
 use AmoCRM\Client\AmoCRMApiClient;
 use League\OAuth2\Client\Token\AccessToken;
-use AmoCRM\Collections\ContactsCollection;
+
 use AmoCRM\Collections\Leads\LeadsCollection;
 use AmoCRM\Exceptions\AmoCRMApiException;
 use AmoCRM\Models\CompanyModel;
-use AmoCRM\Models\ContactModel;
+
 use AmoCRM\Models\LeadModel;
 use League\OAuth2\Client\Token\AccessTokenInterface;
+
+use AmoCRM\Collections\ContactsCollection;
+use AmoCRM\Collections\LinksCollection;
+
+use AmoCRM\Filters\ContactsFilter;
+use AmoCRM\Models\ContactModel;
+use AmoCRM\Models\CustomFieldsValues\MultitextCustomFieldValuesModel;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\MultitextCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\MultitextCustomFieldValueModel;
+
+use AmoCRM\Collections\CustomFields\CustomFieldEnumsCollection;
+use AmoCRM\Helpers\EntityTypesInterface;
+use AmoCRM\Collections\CustomFields\CustomFieldsCollection;
+
+use AmoCRM\Models\CustomFields\CheckboxCustomFieldModel;
+use AmoCRM\Models\CustomFields\CustomFieldModel;
+use AmoCRM\Models\CustomFields\EnumModel;
+use AmoCRM\Models\CustomFields\SelectCustomFieldModel;
+use AmoCRM\Models\CustomFields\TextCustomFieldModel;
+use AmoCRM\Models\CustomFieldsValues\BaseCustomFieldValuesModel;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\NumericCustomFieldValueModel;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\NumericCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\NumericCustomFieldValuesModel;
+
+use AmoCRM\Models\CustomFields\RadiobuttonCustomFieldModel;
+
+
+use Symfony\Component\HttpFoundation\Session\Session;
+
 
 include_once '../vendor/autoload.php';
 include_once '../vendor/amocrm/amocrm-api-library/examples/error_printer.php';
@@ -95,42 +126,205 @@ Route::get('main/submit', function (Request $request) {
             }
         );
 
-    $leadsService = $apiClient->leads();
-    //Создадим сделку с заполненым бюджетом и привязанными контактами и компанией
-    $lead = new LeadModel();
-    $name = $request->input('name');
-    $lead->setName($name)
-        ->setPrice(100000)
-        ->setContacts(
-            (new ContactsCollection())
-                ->add(
-                    (new ContactModel())
-                        ->setId(6591849)
-                )
-                ->add(
-                    (new ContactModel())
-                        ->setId(6490705)
-                        ->setIsMain(true)
-                )
-        )
-        ->setCompany(
-            (new CompanyModel())
-                ->setId(6490685)
-        );
+    $contactFields = $request->request->all();
+    $session = new Session();
+    $session->start();
 
-    $leadsCollection = new LeadsCollection();
-    $leadsCollection->add($lead);
+    // создаем контакт с всеми полями
+    $contact = new ContactModel();
+    // Добавляем к контакту имя и фамилию
+    $contact->setName("{$contactFields['name']} {$contactFields['surname']}");
 
-    try {
-        $leadsCollection = $leadsService->add($leadsCollection);
-    } catch (AmoCRMApiException $e) {
-        printError($e);
-        die;
+    // Добавляем номер телефона к контакту
+
+    //Получим коллекцию значений полей контакта
+    $customFields = $contact->getCustomFieldsValues();
+
+    //Получим значение поля по его коду
+    $phoneField = $customFields->getBy('fieldCode', 'PHONE');
+
+    //Если значения нет, то создадим новый объект поля и добавим его в коллекцию значений
+    if (empty($phoneField)) {
+        $phoneField = (new MultitextCustomFieldValuesModel())->setFieldCode('PHONE');
+        $customFields->add($phoneField);
     }
+
+    //Установим значение поля
+    $phoneField->setValues(
+        (new MultitextCustomFieldValueCollection())
+            ->add(
+                (new MultitextCustomFieldValueModel())
+                    ->setEnum('WORK')
+                    ->setValue($contactFields['phone'])
+            )
+    );
+
+    // Добавляем email
+
+    // //Получим коллекцию значений полей контакта
+
+    //Получим значение поля по его коду
+    $emailField = $customFields->getBy('fieldCode', 'EMAIL');
+
+    //Если значения нет, то создадим новый объект поля и добавим его в коллекцию значений
+    if (empty($emailField)) {
+        $emailField = (new MultitextCustomFieldValuesModel())->setFieldCode('EMAIL');
+        $customFields->add($emailField);
+    }
+
+    //Установим значение поля
+    $emailField->setValues(
+        (new MultitextCustomFieldValueCollection())
+            ->add(
+                (new MultitextCustomFieldValueModel())
+                    ->setEnum('WORK')
+                    ->setValue($contactFields['email'])
+            )
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+    // добвление кастомного поля gender
+    //Получим значение поля по его коду
+    // $genderField = $customFields->getBy('fieldID', 976185)->setFieldCode('GENDER');
+    // $customFields->add(
+    //     (new RadiobuttonCustomFieldValuesModel())
+    //         ->setFieldCode('GENDER')
+    //         ->setValues(
+    //             (new RadiobuttonCustomFieldValueCollection())
+    //                 ->add(
+    //                     (new RadiobuttonCustomFieldValueModel())
+    //                         ->setValue($contactFields['gender'])
+    //                 )
+    //         )
+    // );
+
+    // //Если значения нет, то создадим новый объект поля и добавим его в коллекцию значений
+    // if (empty($genderField)) {
+    //     $genderField = (new RadiobuttonCustomFieldValuesModel())->setFieldId(976185);
+    //     $customFields->add($genderField);
+    // }
+
+    // //Установим значение поля
+    // $genderField->setValues(
+    //     (new RadiobuttonCustomFieldValueCollection())
+    //         ->add(
+    //             (new RadiobuttonCustomFieldValueModel())
+    //                 ->setValue($contactFields['gender'])
+    //         )
+    // );
+
+    
+
+
+
+
+
+
+
+
+
+    // добвление кастомного поля age
+    //Получим значение поля по его коду
+    $ageField = $customFields->getBy('fieldID', 976729);
+
+    //Если значения нет, то создадим новый объект поля и добавим его в коллекцию значений
+    if (empty($ageField)) {
+        $ageField = (new NumericCustomFieldValuesModel())->setFieldId(976729);
+        $customFields->add($ageField);
+    }
+
+    //Установим значение поля
+    $ageField->setValues(
+        (new NumericCustomFieldValueCollection())
+            ->add(
+                (new NumericCustomFieldValueModel())
+                    ->setValue($contactFields['age'])
+            )
+    );
+
+    //Получим коллекцию значений полей контакта
+    $customFields = $contact->getCustomFieldsValues();
+
+    //Получим коллекцию значений полей контактов
+    $customFieldsContacts = $apiClient->customFields(EntityTypesInterface::CONTACTS);
+    $customFieldsContactsArray = $customFieldsContacts->get()->toArray();
+    $isGender = false;
+    // dd($customFieldsContactsArray);
+    foreach($customFieldsContactsArray as $field){
+        if($field['code'] == 'GENDER') $isGender = true;
+    }
+
+    
+
+    if($isGender){
+        
+
+        try {
+            $result = $customFieldsContacts->get(); //Получим коллекцию значений полей контактов
+            // dd($result);
+        } catch (AmoCRMApiException $e) {
+            printError($e);
+            die;
+        }
+
+        $fieldData = [
+            "10" => "мужчина",
+            "20" => "женщина"
+        ];
+        $enumModel = new CustomFieldEnumsCollection();
+        foreach ($fieldData as $sort => $enum) {
+            $enumModel->add((new EnumModel())->setValue($enum)->setSort($sort));
+        }
+
+        $genderField = (new RadiobuttonCustomFieldModel())
+            ->setCode('GENDER')
+            ->setName('Пол')
+            ->setEnums($enumModel);
+
+
+        $customFieldsContacts->addOne($genderField);
+    }
+
+    
+
+    // dd($apiClient->customFields('contacts')->get());
+
+
+
+
+
+
+    // добавляем контакт
+    $apiClient->contacts()->addOne($contact);
+
+    // Создаем сделку
+    $lead = (new LeadModel())->setName('Сделка');
+
+    // Добавляем сделку
+    $apiClient->leads()->addOne($lead);
+
+    // Вешаем сделку к контакту
+    $apiClient->contacts()->link($contact, (new LinksCollection())->add($lead));
+
+
+
+
+
+
     return redirect()->route('success');
 })->name('submit');
 
 
-Route::get('/success', function(){
+Route::get('/success', function () {
     return view('success');
 })->name('success');

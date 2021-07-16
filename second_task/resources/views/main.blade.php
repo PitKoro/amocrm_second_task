@@ -23,11 +23,11 @@
                     <p>Сhoose your gender:</p>
                     <div>
                         <input type="radio" id="gender_choice_male"
-                        name="gender" value="male" checked>
+                        name="gender" value="мужской" checked>
                         <label for="gender_choice_male">Male</label>
 
                         <input type="radio" id="gender_choice_female"
-                        name="gender" value="female">
+                        name="gender" value="женский">
                         <label for="gender_choice_female">Female</label>
                     </div>
                     <button class="btn btn-success mt-4 js-button-submit" type="submit">Submit</button>
