@@ -9,23 +9,19 @@ use AmoCRM\Client\AmoCRMApiClient;
 use AmoCRM\Exceptions\AmoCRMApiException;
 
 
-use AmoCRM\Models\LeadModel;
 use League\OAuth2\Client\Token\AccessTokenInterface;
-
 
 use AmoCRM\Collections\LinksCollection;
 
-
+use AmoCRM\Models\AccountModel;
 use AmoCRM\Models\ContactModel;
+use AmoCRM\Models\CustomFields\EnumModel;
+use AmoCRM\Collections\CustomFields\CustomFieldsCollection;
+use AmoCRM\Collections\CustomFields\CustomFieldEnumsCollection;
+
 use AmoCRM\Models\CustomFieldsValues\MultitextCustomFieldValuesModel;
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\MultitextCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\MultitextCustomFieldValueModel;
-
-use AmoCRM\Collections\CustomFields\CustomFieldEnumsCollection;
-use AmoCRM\Helpers\EntityTypesInterface;
-use AmoCRM\Collections\CustomFields\CustomFieldsCollection;
-
-use AmoCRM\Models\CustomFields\EnumModel;
 
 use AmoCRM\Models\CustomFields\NumericCustomFieldModel;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\NumericCustomFieldValueModel;
@@ -37,6 +33,21 @@ use AmoCRM\Models\CustomFieldsValues\RadiobuttonCustomFieldValuesModel;
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\RadiobuttonCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\RadiobuttonCustomFieldValueModel;
 
+use AmoCRM\Collections\UsersCollection;
+use AmoCRM\Models\Rights\RightModel;
+use AmoCRM\Models\UserModel;
+
+
+use AmoCRM\Filters\CatalogsFilter;
+
+
+use AmoCRM\Helpers\EntityTypesInterface;
+
+
+
+
+
+
 
 
 
@@ -46,6 +57,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 include_once '../vendor/autoload.php';
 include_once '../vendor/amocrm/amocrm-api-library/examples/error_printer.php';
 include_once '../resources/php/token_actions.php';
+include_once '../resources/php/lead_action.php';
 
 
 /*
@@ -131,7 +143,8 @@ Route::get('main/submit', function (Request $request) {
     // создаем контакт с всеми полями
     $contact = new ContactModel();
     // Добавляем к контакту имя и фамилию
-    $contact->setName("{$contactFields['name']} {$contactFields['surname']}");
+
+    $contact->setFirstName($contactFields['name'])->setLastName($contactFields['surname']);
 
     // Добавляем номер телефона к контакту
 
@@ -181,7 +194,7 @@ Route::get('main/submit', function (Request $request) {
     );
 
 
-    // добвление кастомного поля age
+    // добавление кастомного поля age
     // //Получим значение поля по его коду
     // $ageField = $customFields->getBy('fieldID', 976729);
 
@@ -335,8 +348,12 @@ Route::get('main/submit', function (Request $request) {
     // добавляем контакт
     $apiClient->contacts()->addOne($contact);
 
-    // Создаем сделку
-    $lead = (new LeadModel())->setName('Сделка');
+
+// ----------------- Создаем сделку и меняем ответственного на случайного--------------------------------------
+    $lead = createLeadWithRandomResponsibleUser($apiClient, $contactFields['name'], $contactFields['surname']);
+
+// ===========================================================================================
+
 
     // Добавляем сделку
     $apiClient->leads()->addOne($lead);
@@ -344,8 +361,26 @@ Route::get('main/submit', function (Request $request) {
     // Вешаем сделку к контакту
     $apiClient->contacts()->link($contact, (new LinksCollection())->add($lead));
 
+    
+// ------------------------Добавляем товары --------------------------------------------------
 
+    // Получаем список товаров
+    $productsCatalog = $apiClient->catalogs()->get(
+        (new CatalogsFilter())->setType('products')
+    );
+    $products = $apiClient->catalogElements($productsCatalog->first()->getId())->get();
+    // dd($products);
 
+    // Привязываем товары к сделке
+    $links = new LinksCollection();
+
+    foreach ($products as $product) {
+        $links->add($product);
+    }
+
+    $apiClient->leads()->link($lead, $links);
+
+    // ===========================================================================================
 
 
 
