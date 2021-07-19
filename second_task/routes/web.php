@@ -27,6 +27,7 @@ use AmoCRM\Collections\CustomFields\CustomFieldsCollection;
 
 use AmoCRM\Models\CustomFields\EnumModel;
 
+use AmoCRM\Models\CustomFields\NumericCustomFieldModel;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\NumericCustomFieldValueModel;
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\NumericCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\NumericCustomFieldValuesModel;
@@ -181,23 +182,23 @@ Route::get('main/submit', function (Request $request) {
 
 
     // добвление кастомного поля age
-    //Получим значение поля по его коду
-    $ageField = $customFields->getBy('fieldID', 976729);
+    // //Получим значение поля по его коду
+    // $ageField = $customFields->getBy('fieldID', 976729);
 
-    //Если значения нет, то создадим новый объект поля и добавим его в коллекцию значений
-    if (empty($ageField)) {
-        $ageField = (new NumericCustomFieldValuesModel())->setFieldId(976729);
-        $customFields->add($ageField);
-    }
+    // //Если значения нет, то создадим новый объект поля и добавим его в коллекцию значений
+    // if (empty($ageField)) {
+    //     $ageField = (new NumericCustomFieldValuesModel())->setFieldId(976729);
+    //     $customFields->add($ageField);
+    // }
 
-    //Установим значение поля
-    $ageField->setValues(
-        (new NumericCustomFieldValueCollection())
-            ->add(
-                (new NumericCustomFieldValueModel())
-                    ->setValue($contactFields['age'])
-            )
-    );
+    // //Установим значение поля
+    // $ageField->setValues(
+    //     (new NumericCustomFieldValueCollection())
+    //         ->add(
+    //             (new NumericCustomFieldValueModel())
+    //                 ->setValue($contactFields['age'])
+    //         )
+    // );
 
 
     //Получим значение поля по его коду
@@ -221,8 +222,6 @@ Route::get('main/submit', function (Request $request) {
 
 
     //------------- Динамическое добавление поля gender-------------------------------------------------------
-
-    
 
     //Получим коллекцию значений полей контактов
     $customFieldsContactsService = $apiClient->customFields(EntityTypesInterface::CONTACTS);
@@ -281,6 +280,48 @@ Route::get('main/submit', function (Request $request) {
     //===============================================================================================
 
 
+    //---------------------Динамическое добавление поля age------------------------------------
+
+    $isAge = false;
+
+    foreach ($customFieldsContactsArray as $field) {
+        if ($field['code'] == 'AGE') $isAge = true;
+    }
+
+    if (!$isAge) {
+        try {
+            $result = $customFieldsContactsService->get(); //Получим коллекцию значений полей контактов
+            // dd($result);
+        } catch (AmoCRMApiException $e) {
+            printError($e);
+            die;
+        }
+
+        $ageField = (new NumericCustomFieldModel())
+            ->setCode('AGE')
+            ->setName('Возраст');
+
+        $customFieldsContactsService->addOne($ageField);
+    }
+
+    //Получим значение поля по его коду
+    $ageField = $customFields->getBy('fieldCode', 'AGE');
+
+    //Если значения нет, то создадим новый объект поля и добавим его в коллекцию значений
+    if (empty($ageField)) {
+        $ageField = (new NumericCustomFieldValuesModel())->setFieldCode('AGE');
+        $customFields->add($ageField);
+    }
+
+    //Установим значение поля
+    $ageField->setValues(
+        (new NumericCustomFieldValueCollection())
+            ->add(
+                (new NumericCustomFieldValueModel())
+                    ->setValue($contactFields['age'])
+            )
+    );
+    //=========================================================================================
 
 
     
