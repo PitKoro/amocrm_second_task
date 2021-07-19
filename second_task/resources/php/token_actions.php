@@ -1,6 +1,7 @@
 <?php
 
 use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 
 function saveToken($accessToken)
 {
@@ -25,4 +26,21 @@ function getToken()
         'expires' => $accessToken['expires'],
         'baseDomain' => $accessToken['baseDomain'],
     ]);
+}
+
+function updateToken($apiClient, $accessToken){
+    $apiClient->setAccessToken($accessToken)
+        ->setAccountBaseDomain($accessToken->getValues()['baseDomain'])
+        ->onAccessTokenRefresh(
+            function (AccessTokenInterface $accessToken, string $baseDomain) {
+                saveToken(
+                    [
+                        'accessToken' => $accessToken->getToken(),
+                        'refreshToken' => $accessToken->getRefreshToken(),
+                        'expires' => $accessToken->getExpires(),
+                        'baseDomain' => $baseDomain,
+                    ]
+                );
+            }
+        );
 }

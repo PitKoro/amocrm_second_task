@@ -16,7 +16,7 @@ use AmoCRM\Models\ContactModel;
 
 /**
  * Class Contacts
- *
+ *f
  * @package AmoCRM\EntitiesServices
  *
  * @method null|ContactModel getOne($id, array $with = [])
