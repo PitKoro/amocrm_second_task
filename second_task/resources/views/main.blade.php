@@ -24,11 +24,11 @@
                     <div>
                         <input type="radio" id="gender_choice_male"
                         name="gender" value="мужской" checked>
-                        <label for="gender_choice_male">Male</label>
+                        <label for="gender_choice_male">male</label>
 
                         <input type="radio" id="gender_choice_female"
                         name="gender" value="женский">
-                        <label for="gender_choice_female">Female</label>
+                        <label for="gender_choice_female">female</label>
                     </div>
                     <button class="btn btn-success mt-4 js-button-submit" type="submit">Submit</button>
                 </form>
