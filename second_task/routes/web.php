@@ -5,12 +5,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use AmoCRM\Client\AmoCRMApiClient;
+use AmoCRM\Collections\Leads\LeadsCollection;
+use AmoCRM\Collections\Customers\CustomersCollection;
 use AmoCRM\Collections\LinksCollection;
 use AmoCRM\Models\ContactModel;
 use AmoCRM\Helpers\EntityTypesInterface;
 
 use AmoCRM\Filters\ContactsFilter;
+use AmoCRM\Filters\LeadsFilter;
+use AmoCRM\Filters\CustomersFilter;
 
+use AmoCRM\Models\Customers\CustomerModel;
+use AmoCRM\Exceptions\AmoCRMApiException;
 
 use Symfony\Component\HttpFoundation\Session\Session;
 
@@ -87,21 +93,63 @@ Route::get('main/submit', function (Request $request) {
 
     updateToken($apiClient, $accessToken);
 
+    // проверка на дубли по номеру телефона
     $contactsFilter = new ContactsFilter();
     $contactsFilter->setQuery($contactFields['phone']);
     try {
         $contactsWithFilter = $apiClient->contacts()->get($contactsFilter); // получаем все контакты с введеным номером
-    } catch (\AmoCRM\Exceptions\AmoCRMApiNoContentException $e) {
-        dd('false');
+        $contactsWithFilterArray = $contactsWithFilter->toArray();
+    } catch (\AmoCRM\Exceptions\AmoCRMApiNoContentException $e) {}
+
+    if(isset($contactsWithFilterArray)) {
+        $leadsFilter = new LeadsFilter();
+        $leadsFilter->setQuery($contactFields['phone']);
+        $leadsWithFilter = $apiClient->leads()->get($leadsFilter);
+        try {
+            $customersFilter = new CustomersFilter();
+            $customersFilter->setQuery($contactFields['phone']);
+            $customersWithFilter = $apiClient->customers()->get($customersFilter);
+            $customersWithFilterArray = $customersWithFilter->toArray();
+        } catch (\AmoCRM\Exceptions\AmoCRMApiNoContentException $e) {}
+        
+        if(isset($customersWithFilterArray)) return redirect()->route('success');
+
+        $leadWithWonStatus = $leadsWithFilter->first()->setStatusId(142); // меняем statusId  на 142
+        $apiClient->leads()->updateOne($leadWithWonStatus); // сохраняем изменения
+        
+        $customer = new CustomerModel();//Создадим покупателя
+        $customer->setName("Покупатель {$contactsWithFilterArray[0]['name']}")
+                 ->setNextDate(strtotime("+10 day"));
+
+        try {
+            $customer = $apiClient->customers()->addOne($customer);
+        } catch (AmoCRMApiException $e) {
+            printError($e);
+            die;
+        }
+        //Привяжем контакт к созданному покупателю
+        try {
+            $contact = $apiClient->contacts()->getOne($contactsWithFilterArray[0]['id']);
+            // $contact->setIsMain(false);
+        } catch (AmoCRMApiException $e) {
+            printError($e);
+            die;
+        }
+
+        try {
+            $apiClient->customers()->link($customer, (new LinksCollection())->add($contact));
+        } catch (AmoCRMApiException $e) {
+            dd(1);
+            printError($e);
+            die;
+        }
+
+        return redirect()->route('success');
     }
     
+    $contact = new ContactModel();// создаем контакт
     
-
-
-    // создаем контакт с всеми полями
-    $contact = new ContactModel();
-    // Добавляем к контакту имя и фамилию
-    $contact->setFirstName($contactFields['name'])->setLastName($contactFields['surname']);
+    $contact->setFirstName($contactFields['name'])->setLastName($contactFields['surname']); // Добавляем к контакту имя и фамилию
 
     $customFields = $contact->getCustomFieldsValues(); //Получим коллекцию значений полей контакта
 
@@ -110,11 +158,11 @@ Route::get('main/submit', function (Request $request) {
 
     $customFieldsContactsService = $apiClient->customFields(EntityTypesInterface::CONTACTS);
 
-    createGenderField($customFieldsContactsService);
-    addValueToGenderField($customFields, $contactFields['gender']);
+    createGenderField($customFieldsContactsService); // создаем поле gender
+    addValueToGenderField($customFields, $contactFields['gender']); // записываем значение в поле gender
 
-    createAgeField($customFieldsContactsService);
-    addValueToAgeField($customFields, $contactFields['age']);
+    createAgeField($customFieldsContactsService); // создаем поле age
+    addValueToAgeField($customFields, $contactFields['age']);// записываем значение в поле age
 
     $apiClient->contacts()->addOne($contact);// добавляем контакт
 
@@ -122,14 +170,10 @@ Route::get('main/submit', function (Request $request) {
 
     $apiClient->leads()->addOne($lead); // Добавляем сделку
 
-    $apiClient->contacts()->link($contact, (new LinksCollection())->add($lead)); // Вешаем сделку к контакту
+    $apiClient->contacts()->link($contact, (new LinksCollection())->add($lead)); // Привязываем сделку к контакту
 
+    addProductsToLead($apiClient, $lead); // добавляем товары к сделке
     
-// ------------------------Добавляем товары --------------------------------------------------
-    addProductsToLead($apiClient, $lead);
-    
-
-
     return redirect()->route('success');
 })->name('submit');
 
