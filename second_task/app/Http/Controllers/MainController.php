@@ -22,11 +22,11 @@ class MainController extends Controller
         $inputData = $request->all();
 
         return redirect()->route('submit', [
-            'name'    => $inputData['name'], 
-            'surname' => $inputData['surname'], 
-            'age'     => $inputData['age'], 
-            'phone'   => $inputData['phone'], 
-            'email'   => $inputData['email'], 
+            'name'    => $inputData['name'],
+            'surname' => $inputData['surname'],
+            'age'     => $inputData['age'],
+            'phone'   => $inputData['phone'],
+            'email'   => $inputData['email'],
             'gender'  => $inputData['gender']
         ]);
     }

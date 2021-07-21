@@ -1894,12 +1894,7 @@ document.querySelector('.js-validation-name-fields').addEventListener('input', f
 });
 document.querySelector('.js-validation-surname-fields').addEventListener('input', function (e) {
   this.value = this.value.replace(/[^а-яА-Яa-zA-Z\+$]/, '');
-}); // document.querySelector('.js-validation-email-fields').addEventListener('input',
-//     function (e) {
-//         this.value = this.value.replace(/^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/iu, '');
-//     }
-// )
-
+});
 var INPUT = document.querySelector('.js-validation-email-fields');
 
 function validateEmail(value) {
@@ -1914,21 +1909,7 @@ INPUT.addEventListener('input', function () {
     $('.js-button-submit').attr('disabled', false);
     INPUT.style.borderColor = 'green';
   }
-}); // function updateInput() {
-//     if (validateEmail(INPUT.value)) {
-//         $('.js-button-submit').attr('disabled', true);
-//         INPUT.style.borderColor = 'red';
-//     } else {
-//         $('.js-button-submit').attr('disabled', false);
-//         INPUT.style.borderColor = 'green';
-//     }
-// }
-// let EMAIL_REGEXP = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-// function validateEmail(value) {
-//     let isEmail = EMAIL_REGEXP.test(value);
-//     return isEmail;
-// }
-// validateEmail("sdf@234.123");
+});
 
 /***/ }),
 

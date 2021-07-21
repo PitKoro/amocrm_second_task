@@ -30,7 +30,7 @@
                         name="gender" value="женский">
                         <label for="gender_choice_female">female</label>
                     </div>
-                    <button class="btn btn-success mt-4 js-button-submit" type="submit">Submit</button>
+                    <button class="btn btn-success mt-4 js-form-submit-button" type="submit">Submit</button>
                 </form>
             </div>
         </div>

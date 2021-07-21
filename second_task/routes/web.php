@@ -43,10 +43,8 @@ function daysBeforeTask($days = 4)
 {
     $date = strtotime("+$days day");
     if (isWeekend($date)) {
-        // dd('ы попали в условие');
-        daysBeforeTask($days + 1);
+        $days = daysBeforeTask($days + 1);
     }
-    // dd((int)$days);
     return (int)$days;
 }
 
@@ -118,14 +116,7 @@ Route::get('main/submit', function (Request $request) {
     updateToken($apiClient, $accessToken);
 
 
-    // $daysToTask = daysBeforeTask();
-    // dd($daysToTask);
 
-
-
-    //Получим всех пользователей аккаунта
-    // $users = $apiClient->getRequest()->get('/api/v4/leads'); // получаем всех пользователей
-    // dd($users);
 
     // проверка на дубли по номеру телефона
     $contactsFilter = new ContactsFilter();
@@ -210,13 +201,14 @@ Route::get('main/submit', function (Request $request) {
 
     addProductsToLead($apiClient, $lead); // добавляем товары к сделке
 
-    $num = 4;
+    // $num = 4;
 
-    $targetwday = date('N', strtotime("+{$num} days"));
-    $extradays = $targetwday > 5 ? 8 - $targetwday : 0;
-    $days = $num + $extradays;
-    $targetdate = strtotime("+{$days} days");
-    $taskDay = date('d', $targetdate);
+    // $targetwday = date('N', strtotime("+{$num} days"));
+    // $extradays = $targetwday > 5 ? 8 - $targetwday : 0;
+    // $days = $num + $extradays;
+    // $targetdate = strtotime("+{$days} days");
+    // $taskDay = date('d', $targetdate);
+    $daysToTask = daysBeforeTask();
 
 
     //Создадим задачу
@@ -224,7 +216,7 @@ Route::get('main/submit', function (Request $request) {
     $task = new TaskModel();
     $task->setTaskTypeId(TaskModel::TASK_TYPE_ID_CALL)
         ->setText('Новая задача')
-        ->setCompleteTill(mktime(6, 0, 0, 7, (int)$taskDay, 2021))
+        ->setCompleteTill(mktime(6, 0, 0, 7, ((int)date('d')+ $daysToTask), 2021))
         ->setEntityType(EntityTypesInterface::LEADS)
         ->setEntityId((int)$lead->getId())
         ->setDuration(9 * 60 * 60)
