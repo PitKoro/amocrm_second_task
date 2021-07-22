@@ -11,9 +11,9 @@ use AmoCRM\Models\TaskModel;
 use AmoCRM\Collections\TasksCollection;
 use AmoCRM\Helpers\EntityTypesInterface;
 use AmoCRM\Exceptions\AmoCRMApiException;
-// use php\Classes\Helper;
 
-include_once '../resources/php/MyClasses/Helper.php';
+use php\MyClasses\Helper;
+
 
 
 

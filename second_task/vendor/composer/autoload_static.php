@@ -198,6 +198,7 @@ class ComposerStaticInite9adf9163ba422337c2e49b21bd5e376
         'php\\MyClasses\\' => 
         array (
             0 => __DIR__ . '/../..' . '/resources/php/MyClasses',
+            1 => __DIR__ . '/../..' . '/resources/php/MyClasses',
         ),
         'phpDocumentor\\Reflection\\' => 
         array (

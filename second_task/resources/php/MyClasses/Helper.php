@@ -1,4 +1,4 @@
-<?
+<?php
 namespace php\MyClasses;
 
 class Helper
