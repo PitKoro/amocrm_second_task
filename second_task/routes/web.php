@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Route;
 use AmoCRM\Client\AmoCRMApiClient;
 
 use AmoCRM\Collections\LinksCollection;
-use AmoCRM\Models\ContactModel;
-use AmoCRM\Helpers\EntityTypesInterface;
 
 use AmoCRM\Filters\ContactsFilter;
 use AmoCRM\Filters\LeadsFilter;
@@ -21,13 +19,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 
 use php\MyClasses\Contact;
 use php\MyClasses\Lead;
-use php\MyClasses\Helper;
-
-include_once '../vendor/autoload.php';
-include_once '../vendor/amocrm/amocrm-api-library/examples/error_printer.php';
-include_once '../resources/php/token_actions.php';
-
-
+use php\MyClasses\Token;
 
 
 Route::get('/main', function () {
@@ -77,13 +69,14 @@ Route::get("/form", function (Request $request) {
 
 Route::get('main/submit', function (Request $request) {
     $apiClient = new AmoCRMApiClient($_ENV['CLIENT_ID'], $_ENV['CLIENT_SECRET'], $_ENV['CLIENT_REDIRECT_URI']);
-    $accessToken = getToken();
+    $tokenAction = new Token();
+    $accessToken = $tokenAction->getToken();
     $contactFields = $request->request->all();
 
     $session = new Session();
     $session->start();
 
-    updateToken($apiClient, $accessToken);
+    $tokenAction->updateToken($apiClient, $accessToken);
 
     // проверка на дубли по номеру телефона
     $contactsFilter = new ContactsFilter();
@@ -124,7 +117,6 @@ Route::get('main/submit', function (Request $request) {
         //Привяжем контакт к созданному покупателю
         try {
             $contact = $apiClient->contacts()->getOne($contactsWithFilterArray[0]['id']);
-            // $contact->setIsMain(false);
         } catch (AmoCRMApiException $e) {
             printError($e);
             die;
@@ -143,19 +135,11 @@ Route::get('main/submit', function (Request $request) {
     $contact = new Contact($apiClient, $contactFields);
     $apiClient->contacts()->addOne($contact); // добавляем контакт
 
-
-
-
-
-
-
-    // $lead = createLeadWithRandomResponsibleUser($apiClient, $contactFields['name'], $contactFields['surname']); //Создаем сделку и меняем ответственного на случайного
     $lead = new Lead($apiClient, $contactFields['name']);
     $apiClient->leads()->addOne($lead); // Добавляем сделку
-
     $apiClient->contacts()->link($contact, (new LinksCollection())->add($lead)); // Привязываем сделку к контакту
     $lead->addProductsToLead(); // добавляем товары к сделке
-    $lead->createTaskToLead();
+    $lead->createTaskToLead(); // Создаем задачу в сделке
 
     return redirect()->route('success');
 })->name('submit');
