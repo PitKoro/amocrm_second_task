@@ -1,5 +1,5 @@
 <?php
-namespace php\MyClasses;
+namespace App\MyClasses;
 
 use AmoCRM\Client\AmoCRMApiClient;
 

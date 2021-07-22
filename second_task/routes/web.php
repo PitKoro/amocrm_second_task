@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\MainController;
+
+use App\MyClasses\Contact;
+use App\MyClasses\Lead;
+use App\MyClasses\Token;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,9 +22,7 @@ use AmoCRM\Exceptions\AmoCRMApiException;
 
 use Symfony\Component\HttpFoundation\Session\Session;
 
-use php\MyClasses\Contact;
-use php\MyClasses\Lead;
-use php\MyClasses\Token;
+
 
 
 Route::get('/main', function () {
@@ -45,9 +48,35 @@ Route::get('/', function () {
 
 
 Route::get("/form", function (Request $request) {
+    $responseFromAuth = $request->all();
+    $paramsNotFound = [];
+    if(empty($responseFromAuth['code'])) {
+        $paramsNotFound[] = 'code';
+    }
+    if (empty($responseFromAuth['referer'])) {
+        $paramsNotFound[] = 'referer';
+    }
+    if (empty($responseFromAuth['client_id'])) {
+        $paramsNotFound[] = 'client_id';
+    }
+
+    if(!empty($paramsNotFound)) {
+        $error_msg = [
+            "ERROR"=>[
+                "code"=>"400",
+                "msg"=>"bad request"
+            ],
+            "params"=>[
+                "notFound"=> $paramsNotFound
+            ]
+        ];
+
+        dd($error_msg);
+    }
+   
     $apiClient = new AmoCRMApiClient($_ENV['CLIENT_ID'], $_ENV['CLIENT_SECRET'], $_ENV['CLIENT_REDIRECT_URI']);
 
-    $responseFromAuth = $request->all();
+    
     if (isset($responseFromAuth['referer'])) {
         $apiClient->setAccountBaseDomain($responseFromAuth['referer']);
     }
@@ -68,10 +97,42 @@ Route::get("/form", function (Request $request) {
 
 
 Route::get('main/submit', function (Request $request) {
+    $contactFields = $request->all();
+    $paramsNotFound = [];
+    if (empty($contactFields['name'])) {
+        $paramsNotFound[] = 'name';
+    }
+    if (empty($contactFields['surname'])) {
+        $paramsNotFound[] = 'surname';
+    }
+    if (empty($contactFields['age'])) {
+        $paramsNotFound[] = 'age';
+    }
+    if (empty($contactFields['phone'])) {
+        $paramsNotFound[] = 'phone';
+    }
+    if (empty($contactFields['email'])) {
+        $paramsNotFound[] = 'email';
+    }
+
+    if (!empty($paramsNotFound)) {
+        $error_msg = [
+            "ERROR" => [
+                "code" => "400",
+                "msg" => "bad request"
+            ],
+            "params" => [
+                "notFound" => $paramsNotFound
+            ]
+        ];
+
+        dd($error_msg);
+    }
+
     $apiClient = new AmoCRMApiClient($_ENV['CLIENT_ID'], $_ENV['CLIENT_SECRET'], $_ENV['CLIENT_REDIRECT_URI']);
     $tokenAction = new Token();
     $accessToken = $tokenAction->getToken();
-    $contactFields = $request->request->all();
+    // $contactFields = $request->request->all();
 
     $session = new Session();
     $session->start();

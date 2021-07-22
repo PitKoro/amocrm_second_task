@@ -44,7 +44,6 @@ class ComposerStaticInite9adf9163ba422337c2e49b21bd5e376
         ),
         'p' => 
         array (
-            'php\\MyClasses\\' => 14,
             'phpDocumentor\\Reflection\\' => 25,
         ),
         'W' => 
@@ -194,11 +193,6 @@ class ComposerStaticInite9adf9163ba422337c2e49b21bd5e376
         'voku\\' => 
         array (
             0 => __DIR__ . '/..' . '/voku/portable-ascii/src/voku',
-        ),
-        'php\\MyClasses\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/resources/php/MyClasses',
-            1 => __DIR__ . '/../..' . '/resources/php/MyClasses',
         ),
         'phpDocumentor\\Reflection\\' => 
         array (
@@ -920,6 +914,10 @@ class ComposerStaticInite9adf9163ba422337c2e49b21bd5e376
         'App\\Http\\Middleware\\TrustProxies' => __DIR__ . '/../..' . '/app/Http/Middleware/TrustProxies.php',
         'App\\Http\\Middleware\\VerifyCsrfToken' => __DIR__ . '/../..' . '/app/Http/Middleware/VerifyCsrfToken.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
+        'App\\MyClasses\\Contact' => __DIR__ . '/../..' . '/app/MyClasses/Contact.php',
+        'App\\MyClasses\\Helper' => __DIR__ . '/../..' . '/app/MyClasses/Helper.php',
+        'App\\MyClasses\\Lead' => __DIR__ . '/../..' . '/app/MyClasses/Lead.php',
+        'App\\MyClasses\\Token' => __DIR__ . '/../..' . '/app/MyClasses/Token.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\AuthServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AuthServiceProvider.php',
         'App\\Providers\\BroadcastServiceProvider' => __DIR__ . '/../..' . '/app/Providers/BroadcastServiceProvider.php',
@@ -5770,9 +5768,6 @@ class ComposerStaticInite9adf9163ba422337c2e49b21bd5e376
         'phpDocumentor\\Reflection\\Types\\This' => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src/Types/This.php',
         'phpDocumentor\\Reflection\\Types\\Void_' => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src/Types/Void_.php',
         'phpDocumentor\\Reflection\\Utils' => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src/Utils.php',
-        'php\\MyClasses\\Contact' => __DIR__ . '/../..' . '/resources/php/MyClasses/Contact.php',
-        'php\\MyClasses\\Helper' => __DIR__ . '/../..' . '/resources/php/MyClasses/Helper.php',
-        'php\\MyClasses\\Lead' => __DIR__ . '/../..' . '/resources/php/MyClasses/Lead.php',
         'voku\\helper\\ASCII' => __DIR__ . '/..' . '/voku/portable-ascii/src/voku/helper/ASCII.php',
     );
 

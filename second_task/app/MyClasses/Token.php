@@ -1,6 +1,6 @@
 <?php
 
-namespace php\MyClasses;
+namespace App\MyClasses;
 
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
